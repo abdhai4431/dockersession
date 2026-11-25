@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: todo_app
+      POSTGRES_USER: todo_app
+      POSTGRES_PASSWORD: test@123
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U todo_app -d todo_app"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    image: abdhai4431/todo-backend
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: todo_app
+      DB_USERNAME: todo_app
+      DB_PASSWORD: test@123
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: abdhai4431/todo-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
