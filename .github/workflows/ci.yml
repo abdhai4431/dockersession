@@ -77,4 +77,17 @@ jobs:
               run: ./mvnw test
             
 
+    docker-build:
+        needs: [frontend-ci, backend-ci]
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout code
+              uses: actions/checkout@v6
+
+            - name: validate compose
+              run: docker compose config
+
+            - name: build image
+              run: docker compose build frontend backend
+
 
