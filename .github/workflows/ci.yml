@@ -32,3 +32,49 @@ jobs:
               run: npm run build
 
             
+    backend-ci:
+        runs-on: ubuntu-latest
+
+        services:
+            postgres:
+                image: postgres:16
+                env:
+                    POSTGRES_DB: todo_app
+                    POSTGRES_USER: todo_app
+                    POSTGRES_PASSWORD: test_password
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
+        steps:
+            - name: checkout code
+              uses: actions/checkout@v6
+
+            - name: java setup
+              uses: actions/setup-java@v6
+              with:
+                distribution: temurin
+                java-version: '21'
+                cache: 'maven'
+                cache-dependency-path: backend/pom.xml
+            
+            - name: provide permissions
+              working-directory: backend
+              run: sed -i 's/\r$//' mvnw && chmod +x mvnw
+              
+            - name: test code
+              working-directory: backend
+              env:
+                DB_HOST: localhost
+                DB_PORT: 5432  
+                DB_NAME: todo_app 
+                DB_USERNAME: todo_app
+                DB_PASSWORD: test_password
+              run: ./mvnw test
+            
+
+
