@@ -87,7 +87,26 @@ jobs:
             - name: validate compose
               run: docker compose config
 
-            - name: build image
-              run: docker compose build frontend backend
+            - name: login to docker
+              uses: docker/login-action@v4
+              with: 
+                username: ${{ vars.DOCKERHUB_USERNAME }}
+                password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+            - name: Build and push
+              uses: docker/build-push-action@v7
+              with:
+                push: true
+                context: ./frontend
+                file: frontend/Dockerfile
+                tags: ${{ vars.DOCKERHUB_USERNAME }}/todo-frontend:latest
+
+            - name: Build and push
+              uses: docker/build-push-action@v7
+              with:
+                push: true
+                context: ./backend
+                file: backend/Dockerfile
+                tags: ${{ vars.DOCKERHUB_USERNAME }}/todo-backend:latest
 
 
